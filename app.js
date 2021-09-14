@@ -23,12 +23,12 @@ app.use("/api/users", userRouter);
 // 404 handler
 app.use((req, res, next) => {
     const error = new Error(`Not Found - ${req.originalUrl}`);
-    res.status = 404;
+    error.status = 404;
     next(error);
 });
 
 // global error handler
-app.use((error, req, res, next) => {
+app.use((err, req, res, next) => {
     res.status(err.status || 500);
     res.json({
         message: err.message,
