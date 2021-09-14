@@ -2,7 +2,6 @@ const Roles = require("../utils/roles");
 const User = require("../models/user.model");
 const { authSchema } = require("../validator/joi");
 const { generateToken } = require("../utils/jwt");
-const mongoose = require("mongoose");
 
 const bcryptSalt = 10;
 
@@ -34,18 +33,10 @@ const register = async (req, res, role) => {
         return res.status(201).json({
             message: "Account created successfully",
             success: true,
-            result: {
-                userId: user._id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-            },
+            token: generateToken(user),
         });
     }
     catch (err) {
-
-        if (err.isJoi) err.status = 422;
-
         return res.status(500).json({
             message: "Internal server error",
             success: false,
@@ -117,12 +108,16 @@ const updateAccount = async (req, res) => {
             });
         }
 
-        /**
-         *  User and admin can't update super-admin account
-         *  User can't update admin account
-         */
+        if (user.role === Roles.superadmin) {
 
-        if (req.user.role === Roles.admin || Roles.superadmin) {
+            return res.status(403).json({
+                message: "Action prohibited",
+                success: false,
+            });
+
+        }
+
+        if (req.user.role === Roles.admin) {
 
             let updateOptions = {};
 
@@ -184,11 +179,6 @@ const deleteAccount = async (req, res) => {
                 success: false,
             });
         }
-
-        /**
-         *  Admin can't delete super-admin account
-         *  Admin can't delete his/her own account
-         */
 
         if ((req.user.role === Roles.admin && user.role === Roles.superadmin) ||
             (req.user.role === Roles.admin && user.role === Roles.admin)
