@@ -84,9 +84,6 @@ const login = async (req, res) => {
 
     }
     catch (err) {
-
-        if (err.isJoi) err.status = 422;
-
         return res.status(500).json({
             message: "Internal server error",
             success: false,
@@ -108,7 +105,9 @@ const updateAccount = async (req, res) => {
             });
         }
 
-        if (user.role === Roles.superadmin) {
+        if ((user.role === Roles.superadmin) ||
+            (req.user.role === Roles.admin && user.role === Roles.admin)
+        ) {
 
             return res.status(403).json({
                 message: "Action prohibited",
@@ -117,47 +116,36 @@ const updateAccount = async (req, res) => {
 
         }
 
-        if (req.user.role === Roles.admin) {
+        let updateOptions = {};
 
-            let updateOptions = {};
+        if (req.body.email) {
 
-            if (req.body.email) {
+            if (validateEmail(req.body.email)) {
 
-                if (validateEmail(req.body.email)) {
+                updateOptions["email"] = req.body.email;
 
-                    updateOptions["email"] = req.body.email;
+            } else {
 
-                } else {
+                return res.status(422).json({
+                    message: "Unsupported email",
+                    success: false,
+                });
 
-                    return res.status(422).json({
-                        message: "Unsupported email",
-                        success: false,
-                    });
-
-                }
             }
-            if (req.body.password) {
-
-                const hashedPassword = await bcrypt.hash(req.body.password, bcryptSalt);
-
-                updateOptions["password"] = hashedPassword;
-            };
-
-            await findByIdAndUpdate(user._id, { $set: updateOptions });
-
-            return res.status(200).json({
-                message: "Successfully updated account",
-                success: true,
-            });
-
-        } else {
-
-            return res.status(403).json({
-                message: "Action prohibited",
-                success: false,
-            });
-
         }
+        if (req.body.password) {
+
+            const hashedPassword = await bcrypt.hash(req.body.password, bcryptSalt);
+
+            updateOptions["password"] = hashedPassword;
+        };
+
+        await findByIdAndUpdate(user._id, { $set: updateOptions });
+
+        return res.status(200).json({
+            message: "Successfully updated account",
+            success: true,
+        });
 
     } catch (err) {
         return res.status(500).json({

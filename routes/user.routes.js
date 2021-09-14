@@ -14,7 +14,7 @@ const {
     updateAccount,
     deleteAccount,
     users
-} = require("../controllers/auth.controller");
+} = require("../controllers/user.controller");
 const { protect, isSuperAdmin } = require("../middleware/auth.middleware");
 
 router.post("/register", async (req, res) => {

@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const logger = require("morgan");
 
-const userRouter = require("./routes/auth.routes");
+const userRouter = require("./routes/user.routes");
 
 // database connection
 require("./config/db")();
