@@ -27,7 +27,7 @@ io.on("connection", (socket) => {
         let msg = "A test notification send by admin";
 
         if (user && user !== undefined) {
-            io.to(user.socketId).emit("notification_received_by_admin", msg);
+            socket.broadcast.to(user.socketId).emit("notification_received_by_admin", msg);
         }
     });
 
