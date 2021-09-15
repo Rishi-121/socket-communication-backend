@@ -18,16 +18,16 @@ io.on("connection", (socket) => {
         let userObj = { userId, socketId: socket.id };
 
         users.push(userObj);
+
     });
 
     socket.on("send_notifications", (userId) => {
-
         let user = users.find((e) => e.userId === userId);
-
+    
         let msg = "A test notification send by admin";
-
+         
         if (user && user !== undefined) {
-            socket.broadcast.to(user.socketId).emit("notification_received_by_admin", msg);
+            socket.to(user.socketId).emit("notification_received_by_admin", msg);
         }
     });
 
